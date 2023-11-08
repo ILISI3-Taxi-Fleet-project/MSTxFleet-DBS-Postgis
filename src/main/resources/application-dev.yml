@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: MSTxFleet-DBS-Postgis
+
+  cloud:
+    discovery:
+      enabled: false
+  datasource:
+    username: ilisi
+    password: ilisi
+    url: jdbc:postgresql://localhost:5432/ilisi2023-2024
+  jpa:
+    hibernate:
+      ddl-auto: update
