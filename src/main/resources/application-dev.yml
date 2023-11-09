@@ -4,7 +4,7 @@ spring:
 
   cloud:
     discovery:
-      enabled: false
+      enabled: true
   datasource:
     username: ilisi
     password: ilisi
@@ -12,3 +12,5 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+server:
+  port: 0
