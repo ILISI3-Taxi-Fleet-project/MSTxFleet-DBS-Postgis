@@ -17,7 +17,7 @@
         <java.version>17</java.version>
         <spring-cloud.version>2022.0.4</spring-cloud.version>
         <jts.version>1.19.0</jts.version>
-        <hibernate.spatial.version>6.3.0.CR1</hibernate.spatial.version>
+        <hibernate.spatial.version>6.1.7.Final</hibernate.spatial.version>
         <jackson.jts.version>2.4</jackson.jts.version>
     </properties>
     <dependencies>
