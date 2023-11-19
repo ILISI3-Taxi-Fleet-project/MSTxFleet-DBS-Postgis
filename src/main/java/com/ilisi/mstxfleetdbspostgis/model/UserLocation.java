@@ -20,8 +20,7 @@ public class UserLocation {
 
         @Id
         private String userId;
-        @Column(columnDefinition = "geometry(Point,4326)")
-        private Point location;
+        private String location;
 
         private String userType;
 
