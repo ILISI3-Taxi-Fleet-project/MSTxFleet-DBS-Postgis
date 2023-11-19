@@ -17,13 +17,13 @@ import org.hibernate.annotations.CreationTimestamp;
 @Builder
 public class UserLocation {
 
-    @Id
-    private String userId;
-    private String location;
-    private String user_type;
+        @Id
+        private String userId;
+        private String location;
 
-    @CreationTimestamp
-    private String creationAt;
-    @CreationTimestamp
-    private String updatedAt;
+        private String userType;
+
+        @CreationTimestamp
+        private String creationAt;
+        private String updatedAt;
 }
