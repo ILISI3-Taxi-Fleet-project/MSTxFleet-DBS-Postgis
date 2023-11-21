@@ -26,6 +26,7 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
                 ST_SetSRID(ST_GeomFromText(:userLocation), 4326),
                 :radiusInMeters, true) = true
             AND ul.isOnline = true
+            AND ul.location != :userLocation
             """
 )
     List<UserLocation> findNearbyOnlineUsers(
