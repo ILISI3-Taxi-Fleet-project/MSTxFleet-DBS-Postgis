@@ -27,7 +27,7 @@ public class UserLocation {
         @Column(columnDefinition = "boolean default false")
         private boolean isOnline;
         @CreationTimestamp
-        private String creationAt;
+        private String createdAt;
         @UpdateTimestamp
         private String updatedAt;
 }
