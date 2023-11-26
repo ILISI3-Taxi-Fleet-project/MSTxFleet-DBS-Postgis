@@ -6,6 +6,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.List;
+
 
 @RepositoryRestResource(collectionResourceRel = "userLocations")
 public interface UserLocationRepository extends CrudRepository<UserLocation, String> {
@@ -51,24 +53,21 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
     );
 
 
-
-
-
     @Query(value = """
             SELECT jsonb_agg(
-                       jsonb_build_object(
-                           'userId', ul.userId,
-                           'location', ul.location,
-                           'userType', ul.userType,
-                           'creationAt', ul.creationAt,
-                           'updatedAt', ul.updatedAt,
-                           'isOnline', ul.isOnline,
-                           'linearDistanceInMeters', ST_Distance(
-                               ST_SetSRID(ST_GeomFromText(ul.location), 4326),
-                               ST_SetSRID(ST_GeomFromText(:userLocation), 4326)
-                           )
+                      jsonb_build_object(
+                       'userId', ul.userId,
+                       'location', ul.location,
+                       'userType', ul.userType,
+                       'createdAt', ul.createdAt,
+                       'updatedAt', ul.updatedAt,
+                       'isOnline', ul.isOnline,
+                       'linearDistanceInMeters', ST_Distance(
+                           ST_SetSRID(ST_GeomFromText(ul.location), 4326),
+                           ST_SetSRID(ST_GeomFromText(:userLocation), 4326)
                        )
-                   ) as nearby_users
+                   )
+                ) as nearby_users
             FROM UserLocation ul
             WHERE ST_DWithin(
                 ST_SetSRID(ST_GeomFromText(ul.location), 4326),
@@ -83,23 +82,22 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
             @Param("radiusInMeters") double radiusInMeters
     );
 
+
     @Query(value = """
             SELECT jsonb_agg(
-                       jsonb_build_object (
-                           'userId', ul.userId,
-                           'location', ul.location,
-                           'userType', ul.userType,
-                           'creationAt', ul.creationAt,
-                           'updatedAt', ul.updatedAt,
-                           'isOnline', ul.isOnline,
-                           'linearDistanceInMeters', ST_Distance(
-                               ST_SetSRID(ST_GeomFromText(ul.location), 4326),
-                               (SELECT ST_SetSRID(ST_GeomFromText(ul1.location), 4326)
-                                    FROM UserLocation ul1
-                                    WHERE ul1.userId = :userId)
-                           )
+                      jsonb_build_object(
+                       'userId', ul.userId,
+                       'location', ul.location,
+                       'userType', ul.userType,
+                       'createdAt', ul.createdAt,
+                       'updatedAt', ul.updatedAt,
+                       'isOnline', ul.isOnline,
+                       'linearDistanceInMeters', ST_Distance(
+                           ST_SetSRID(ST_GeomFromText(ul.location), 4326),
+                           ST_SetSRID(ST_GeomFromText(:userLocation), 4326)
                        )
-                   ) as nearby_users
+                   )
+                 ) as nearby_users
             FROM UserLocation ul
             WHERE ST_DWithin(
                 ST_SetSRID(ST_GeomFromText(ul.location), 4326),
