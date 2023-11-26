@@ -9,6 +9,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
+
 
 @Entity
 @Data
@@ -27,7 +29,7 @@ public class UserLocation {
         @Column(columnDefinition = "boolean default false")
         private boolean isOnline;
         @CreationTimestamp
-        private String createdAt;
+        private Instant createdAt;
         @UpdateTimestamp
-        private String updatedAt;
+        private Instant updatedAt;
 }
