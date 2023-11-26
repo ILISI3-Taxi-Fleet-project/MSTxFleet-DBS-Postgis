@@ -54,7 +54,20 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
 
 
     @Query(value = """
-            SELECT ul
+            SELECT jsonb_agg(
+                      jsonb_build_object(
+                       'userId', ul.userId,
+                       'location', ul.location,
+                       'userType', ul.userType,
+                       'createdAt', ul.createdAt,
+                       'updatedAt', ul.updatedAt,
+                       'isOnline', ul.isOnline,
+                       'linearDistanceInMeters', ST_Distance(
+                           ST_SetSRID(ST_GeomFromText(ul.location), 4326),
+                           ST_SetSRID(ST_GeomFromText(:userLocation), 4326)
+                       )
+                   )
+                ) as nearby_users
             FROM UserLocation ul
             WHERE ST_DWithin(
                 ST_SetSRID(ST_GeomFromText(ul.location), 4326),
@@ -64,14 +77,27 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
                 AND ul.location != :userLocation
                 AND upper(ul.userType) = 'PASSENGER'
             """)
-    List<UserLocation> findNearbyOnlineUsersByLocation (
+    String findNearbyOnlineUsersByLocation (
             @Param("userLocation") String userLocation,
             @Param("radiusInMeters") double radiusInMeters
     );
 
 
     @Query(value = """
-            SELECT ul
+            SELECT jsonb_agg(
+                      jsonb_build_object(
+                       'userId', ul.userId,
+                       'location', ul.location,
+                       'userType', ul.userType,
+                       'createdAt', ul.createdAt,
+                       'updatedAt', ul.updatedAt,
+                       'isOnline', ul.isOnline,
+                       'linearDistanceInMeters', ST_Distance(
+                           ST_SetSRID(ST_GeomFromText(ul.location), 4326),
+                           ST_SetSRID(ST_GeomFromText(:userLocation), 4326)
+                       )
+                   )
+                 ) as nearby_users
             FROM UserLocation ul
             WHERE ST_DWithin(
                 ST_SetSRID(ST_GeomFromText(ul.location), 4326),
@@ -83,7 +109,7 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
                 AND ul.userId != :userId
                 AND upper(ul.userType) = 'PASSENGER'
             """)
-    List<UserLocation> findNearbyOnlineUsersByUserId (
+    String findNearbyOnlineUsersByUserId (
             @Param("userId") String userId,
             @Param("radiusInMeters") double radiusInMeters
     );
