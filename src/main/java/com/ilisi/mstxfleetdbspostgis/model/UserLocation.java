@@ -21,15 +21,15 @@ import java.time.Instant;
 @ToString
 public class UserLocation {
 
-        @Id
-        private String userId;
-        private String location;
+    @Id
+    private String userId;
+    private String location;
 
-        private String userType;
-        @Column(columnDefinition = "boolean default false")
-        private boolean isOnline;
-        @CreationTimestamp
-        private Instant createdAt;
-        @UpdateTimestamp
-        private Instant updatedAt;
+    private String userType;
+    @Column(columnDefinition = "boolean default false")
+    private boolean isOnline;
+    @CreationTimestamp
+    private Instant createdAt;
+    @UpdateTimestamp
+    private Instant updatedAt;
 }
