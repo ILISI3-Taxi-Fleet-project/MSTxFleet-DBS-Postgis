@@ -6,14 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LocationMessage {
     private String userId;
-    private double latitude;
-    private double longitude;
+    private String location;
     private String userType;
-    private String timestamp;
+    private Instant createdAt = Instant.now();
 }
