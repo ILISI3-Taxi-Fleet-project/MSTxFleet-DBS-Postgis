@@ -4,18 +4,22 @@ spring:
 
   cloud:
     discovery:
-      enabled: true
+      enabled: false
   datasource:
     username: ilisi
     password: ilisi
-    url: jdbc:postgresql://localhost:5432/ilisi2023-2024
+    url: jdbc:postgresql://postgres-postgis-prod:5432/ilisi2023-2024
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
 
+  docker:
+    compose:
+      enabled: false
+
   kafka:
-    bootstrap-servers: localhost:9092  # The address of your Kafka broker(s)
+    #bootstrap-servers: localhost:9092  # The address of your Kafka broker(s)
     consumer:
       auto-offset-reset: earliest  # Set the offset reset to 'earliest' or 'latest'
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # Key deserializer
@@ -24,6 +28,3 @@ spring:
       enable-auto-commit: true
       properties:
         spring.json.trusted.packages: '*'
-
-server:
-  port: 0
