@@ -161,4 +161,47 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
             @Param("radiusInMeters") double radiusInMeters
     );
 
+    @Query(value = """
+            -- find he nearest vertex to the start longitude/latitude
+            WITH start AS (
+              SELECT topo.source --could also be topo.target
+              FROM media_2po_4pgr as topo
+              ORDER BY topo.geom_way <-> ST_SetSRID(
+                (SELECT ST_SetSRID(ST_GeomFromText(ul1.location), 4326)
+                        FROM user_location ul1
+                        WHERE ul1.user_id = :startUserId),
+              4326)
+              LIMIT 1
+            ),
+            -- find the nearest vertex to the destination longitude/latitude
+            destination AS (
+              SELECT topo.source --could also be topo.target
+              FROM media_2po_4pgr as topo
+              ORDER BY topo.geom_way <-> ST_SetSRID(
+                (SELECT ST_SetSRID(ST_GeomFromText(ul2.location), 4326)
+                        FROM user_location ul2
+                        WHERE ul2.user_id = :endUserId),
+              4326)
+              LIMIT 1
+            )
+            -- use Dijsktra and join with the geometries
+            SELECT ST_AsText(ST_Union(geom_way))
+            FROM pgr_dijkstra('
+                SELECT id,
+                     source,
+                     target,
+                     ST_Length(ST_Transform(geom_way, 3857)) AS cost
+                    FROM media_2po_4pgr',
+                array(SELECT source FROM start),
+                array(SELECT source FROM destination),
+                false) AS di
+            JOIN   media_2po_4pgr AS pt
+              ON   di.edge = pt.id;
+            """,
+            nativeQuery = true)
+    String findPathBetweenTwoUsers(
+            @Param("startUserId") String startUserId,
+            @Param("endUserId") String endUserId
+    );
+
 }
