@@ -91,11 +91,7 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
                        'userType', ul.userType,
                        'createdAt', ul.createdAt,
                        'updatedAt', ul.updatedAt,
-                       'isOnline', ul.isOnline,
-                       'linearDistanceInMeters', ST_Distance(
-                           ST_SetSRID(ST_GeomFromText(ul.location), 4326),
-                           ST_SetSRID(ST_GeomFromText(:userLocation), 4326)
-                       )
+                       'isOnline', ul.isOnline
                    )
                  ) as nearby_users
             FROM UserLocation ul
