@@ -31,7 +31,10 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
               LIMIT 1
             )
             -- use Dijsktra and join with the geometries
-            SELECT ST_AsText(ST_Union(geom_way))
+            SELECT COALESCE(
+                       ST_AsText(ST_Union(pt.geom_way)),
+                       ST_AsText(ST_MakePoint(0, 1)) -- Default value when no route is found
+                   ) AS path
             FROM pgr_dijkstra('
                 SELECT id,
                      source,
@@ -40,7 +43,7 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
                     FROM media_2po_4pgr',
                 array(SELECT source FROM start),
                 array(SELECT source FROM destination),
-                directed := false) AS di
+                directed \\:= false) AS di
             JOIN   media_2po_4pgr AS pt
               ON   di.edge = pt.id;
             """,
@@ -54,7 +57,8 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
 
 
     @Query(value = """
-            SELECT jsonb_agg(
+            SELECT COALESCE(
+                    jsonb_agg(
                       jsonb_build_object(
                        'userId', ul.userId,
                        'location', ul.location,
@@ -66,7 +70,9 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
                            ST_SetSRID(ST_GeomFromText(ul.location), 4326),
                            ST_SetSRID(ST_GeomFromText(:userLocation), 4326)
                        )
-                   )
+                    )
+                   ),
+                   '[]'
                 ) as nearby_users
             FROM UserLocation ul
             WHERE ST_DWithin(
@@ -84,16 +90,19 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
 
 
     @Query(value = """
-            SELECT jsonb_agg(
-                      jsonb_build_object(
-                       'userId', ul.userId,
-                       'location', ul.location,
-                       'userType', ul.userType,
-                       'createdAt', ul.createdAt,
-                       'updatedAt', ul.updatedAt,
-                       'isOnline', ul.isOnline
-                   )
-                 ) as nearby_users
+            SELECT COALESCE(
+                       jsonb_agg(
+                           jsonb_build_object(
+                               'userId', ul.userId,
+                               'location', ul.location,
+                               'userType', ul.userType,
+                               'createdAt', ul.createdAt,
+                               'updatedAt', ul.updatedAt,
+                               'isOnline', ul.isOnline
+                           )
+                       ),
+                       '[]'
+                   ) as nearby_users
             FROM UserLocation ul
             WHERE ST_DWithin(
                 ST_SetSRID(ST_GeomFromText(ul.location), 4326),
