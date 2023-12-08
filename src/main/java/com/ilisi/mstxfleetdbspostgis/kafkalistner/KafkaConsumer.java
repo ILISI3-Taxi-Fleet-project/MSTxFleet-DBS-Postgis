@@ -16,7 +16,7 @@ public class KafkaConsumer {
 
     private final UserLocationRepository userLocationRepository;
 
-    @KafkaListener(topics = "location", groupId = "{spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "location", groupId = "${spring.kafka.consumer.group-id}")
     public void consume(ConsumerRecord<String, LocationMessage> record) {
         try {
             LocationMessage message = record.value();

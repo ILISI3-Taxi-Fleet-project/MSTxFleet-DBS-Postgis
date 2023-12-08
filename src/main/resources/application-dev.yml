@@ -20,7 +20,7 @@ spring:
       auto-offset-reset: earliest  # Set the offset reset to 'earliest' or 'latest'
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # Key deserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer  # Value deserializer
-      group-id: group_1
+      group-id: postgis_group_1
       enable-auto-commit: true
       properties:
         spring.json.trusted.packages: '*'
