@@ -21,12 +21,20 @@ public class KafkaConsumer {
         try {
             LocationMessage message = record.value();
             log.info("Message received from Kafka topic location: {}", message);
-            UserLocation userLocation = UserLocation.builder()
-                    .userId(message.getUserId())
-                    .location(message.getLocation())
-                    .userType(message.getUserType())
-                    .isOnline(true)
-                    .build();
+
+            UserLocation userLocation = userLocationRepository.findByUserId(message.getUserId())
+                    .orElse(UserLocation.builder()
+                            .userId(message.getUserId())
+                            .createdAt(message.getCreatedAt())
+                            .build());
+
+            userLocation.setOnline(message.getIsOnline());
+            if(message.getIsOnline()) {
+                userLocation.setUserType(message.getUserType());
+                userLocation.setLocation(message.getLocation());
+                userLocation.setUpdatedAt(message.getUpdatedAt());
+            }
+
             userLocationRepository.save(userLocation);
         } catch (Exception e) {
             e.printStackTrace();
