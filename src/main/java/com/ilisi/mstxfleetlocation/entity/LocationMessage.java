@@ -16,5 +16,7 @@ public class LocationMessage {
     private String userId;
     private String location;
     private String userType;
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
+    private Instant updatedAt;
+    private Boolean isOnline;
 }
