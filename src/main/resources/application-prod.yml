@@ -11,7 +11,7 @@ spring:
     url: jdbc:postgresql://postgres-postgis-prod:5432/ilisi2023-2024
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
 
   docker:
