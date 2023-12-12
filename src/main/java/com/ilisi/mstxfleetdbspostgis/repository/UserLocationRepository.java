@@ -80,11 +80,12 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
                 :radiusInMeters, true) = true
                 AND ul.isOnline = true
                 AND ul.location != :userLocation
-                AND upper(ul.userType) = 'PASSENGER'
+                AND upper(ul.userType) = upper(COALESCE(:userType, 'PASSENGER'))
             """)
-    String findNearbyOnlineUsersByLocation (
+    String findNearbyOnlineUsersByLocation(
             @Param("userLocation") String userLocation,
-            @Param("radiusInMeters") double radiusInMeters
+            @Param("radiusInMeters") double radiusInMeters,
+            @Param("userType") String userType
     );
 
 
@@ -111,56 +112,60 @@ public interface UserLocationRepository extends CrudRepository<UserLocation, Str
                 :radiusInMeters, true) = true
                 AND ul.isOnline = true
                 AND ul.userId != :userId
-                AND upper(ul.userType) = 'PASSENGER'
+                AND upper(ul.userType) = upper(COALESCE(:userType, 'PASSENGER'))
             """)
-    String findNearbyOnlineUsersByUserId (
+    String findNearbyOnlineUsersByUserId(
             @Param("userId") String userId,
-            @Param("radiusInMeters") double radiusInMeters
+            @Param("radiusInMeters") double radiusInMeters,
+            @Param("userType") String userType
     );
 
     @Query(value = """
-            -- find the nearest vertex to the start longitude/latitude
-                WITH start AS (
-                    SELECT topo.source
-                    FROM media_2po_4pgr as topo
-                    ORDER BY topo.geom_way <-> ST_SetSRID(ST_GeomFromText(:startLocation), 4326)
-                    LIMIT 1
-                ),
-                -- find the nearest vertex to the destination longitude/latitude
-                destination AS (
-                    SELECT topo.source
-                    FROM media_2po_4pgr as topo
-                    ORDER BY topo.geom_way <-> ST_SetSRID(ST_GeomFromText(:endLocation), 4326)
-                    LIMIT 1
-                ),
-                -- use Dijsktra and join with the geometries
-                dijkstra AS (
-                    SELECT geom_way
-                    FROM pgr_dijkstra(
-                        'SELECT id, source, target, ST_Length(ST_Transform(geom_way, 3857)) AS cost FROM media_2po_4pgr',
-                        array(SELECT source FROM start),
-                        array(SELECT source FROM destination),
-                        false
-                    ) AS di
-                    JOIN media_2po_4pgr AS pt ON di.edge = pt.id
-                )
-                -- Select all users that are online and within the radius of the path
-                SELECT  jsonb_agg(
-                          jsonb_build_object(
-                           'userId', ul.user_id,
-                           'location', ul.location,
-                           'userType', ul.user_type,
-                           'createdAt', ul.created_at,
-                           'updatedAt', ul.updated_at,
-                           'isOnline', ul.is_online
-                       )
-                    ) as nearby_users
-                FROM user_location AS ul, dijkstra As pt
-                WHERE ST_DWithin(ST_SetSRID(ST_GeomFromText(ul.location), 4326), pt.geom_way, :radiusInMeters,true)
-                AND ul.is_online
-                AND upper(ul.user_type) = 'PASSENGER'
-                AND ul.location != :startLocation
-    """, nativeQuery = true)
+                    -- find the nearest vertex to the start longitude/latitude
+                        WITH start AS (
+                            SELECT topo.source
+                            FROM media_2po_4pgr as topo
+                            ORDER BY topo.geom_way <-> ST_SetSRID(ST_GeomFromText(:startLocation), 4326)
+                            LIMIT 1
+                        ),
+                        -- find the nearest vertex to the destination longitude/latitude
+                        destination AS (
+                            SELECT topo.source
+                            FROM media_2po_4pgr as topo
+                            ORDER BY topo.geom_way <-> ST_SetSRID(ST_GeomFromText(:endLocation), 4326)
+                            LIMIT 1
+                        ),
+                        -- use Dijsktra and join with the geometries
+                        dijkstra AS (
+                            SELECT geom_way
+                            FROM pgr_dijkstra(
+                                'SELECT id, source, target, ST_Length(ST_Transform(geom_way, 3857)) AS cost FROM media_2po_4pgr',
+                                array(SELECT source FROM start),
+                                array(SELECT source FROM destination),
+                                false
+                            ) AS di
+                            JOIN media_2po_4pgr AS pt ON di.edge = pt.id
+                        )
+                        -- Select all users that are online and within the radius of the path
+                        SELECT  COALESCE(
+                                    jsonb_agg(
+                                      jsonb_build_object(
+                                       'userId', ul.user_id,
+                                       'location', ul.location,
+                                       'userType', ul.user_type,
+                                       'createdAt', ul.created_at,
+                                       'updatedAt', ul.updated_at,
+                                       'isOnline', ul.is_online
+                                   ),
+                                   '[]'
+                                )
+                            ) as nearby_users
+                        FROM user_location AS ul, dijkstra As pt
+                        WHERE ST_DWithin(ST_SetSRID(ST_GeomFromText(ul.location), 4326), pt.geom_way, :radiusInMeters,true)
+                        AND ul.is_online
+                        AND upper(ul.user_type) = 'PASSENGER'
+                        AND ul.location != :startLocation
+            """, nativeQuery = true)
     String findNearbyOnlineUsersToPath(
             @Param("startLocation") String startLocation,
             @Param("endLocation") String endLocation,
